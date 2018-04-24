@@ -1,0 +1,219 @@
+/***********************************************************
+************************************************************
+******************Main Bot Listener*************************
+************************************************************
+***********************************************************/
+
+
+var Discord = require("discord.js");
+var fs = require('fs');
+const googleImages = require('google-images');
+const zf = require('./zug-facts');
+const dr = require('./dice-roller');
+//"use strict";
+
+var bot = new Discord.Client();
+
+bot.login("MzU2NTI4MDI3ODc5ODY2Mzc5.DJcqLQ.8iVRV_e46TOmW3FygGmubnnO3C4");
+
+//let client = googleImages('CSE_KEY', 'API_KEY');
+
+//var roleList = ["Pretty in Pink", "RPGX Member", "Community Supporter"];
+
+var roleList = ["Staff", "Chat Mod", "Master Chef"];
+
+bot.on('message', message => {
+
+    var input = message.content.toLowerCase();
+
+    if(input === "hi rpgxbot"){
+
+      message.reply("Nobody loves DreaM.");
+
+    }else if(input === "!kedkilljoy"){
+
+      message.channel.send("http://s1.thingpic.com/images/nb/PUSCYKU1mfpJYiZG6B9WDF1R.jpeg");
+
+    }else if (input.indexOf("!roll ") === 0){
+
+      var args = input.substring(5);
+
+      args = args.trim();
+
+      var result = dr.roll(args);
+
+      var response = "You asked me to roll " + args + " and I got " + result;
+
+      message.reply(response);
+
+    }else if (input.indexOf("!choose ") === 0){
+
+      var args = message.content.substring(7);
+
+      args = args.trim();
+
+      var result = dr.choose(args);
+
+      message.reply(result);
+
+    }/*else if (input.indexOf("!imgme ") === 0){
+
+      //bot.reply("Pre-search");
+
+      client.search(input.substr(5), {
+
+          page: 1,
+          safe: 'medium',
+          gl: 'US',
+          googlehost: 'google.com',
+          fileType: 'jpg',
+          num: 20
+
+        }).then(function (images){
+
+        var ran = Math.floor(Math.random() * 20);
+
+        var url = images[ran]['url'];
+
+        url = url.substring(0, url.indexOf(".jpg")+4);
+
+        bot.send(url);
+
+      });
+
+    }*/else if (input === "!cocktail"){
+
+      message.channel.send("https://media.giphy.com/media/HV9kRik6zvzwY/giphy.gif");
+
+    }else if (input === "!martini"){
+
+      message.channel.send("https://66.media.tumblr.com/2d5f8f3d8d9bbd21139bb0661c1127f5/tumblr_inline_o5zoz6Qzxu1tlzqyy_500.gif");
+
+    }else if (input === "!picard"){
+
+      message.channel.send("http://media1.giphy.com/media/6OWIl75ibpuFO/giphy.gif");
+
+    }else if (input === "!zug"){
+
+      message.channel.send("http://i1.kym-cdn.com/photos/images/newsfeed/000/385/009/23e.gif");
+
+    }else if (input === "!zugfacts"){
+
+      messages = zf.getZugFact();
+
+      console.log(`Sending ZugFact: ${messages}`)
+      message.channel.send(messages);
+
+    }else if (input === "!smokebomb"){
+
+      message.channel.send("http://www.reactiongifs.us/wp-content/uploads/2015/07/smoke_bomb_archer.gif");
+
+    }else if (input.indexOf("!addzugfacts ") === 0){
+
+      var isStaff = false
+      if (message.guild.member(message.author).roles.find("name", "Staff") != null){
+        var isStaff = true
+      }
+      var output = zf.addZugFacts(isStaff, message.author.id, message.content.substring(12));
+
+      message.channel.send(output);
+
+    }else if (input.indexOf("!roleme ") === 0){
+
+      role = message.content.substring(7).trim();
+
+
+      //bot.send(role);
+      if(!(roleList.indexOf(role) > -1)){
+
+
+
+        try{
+
+          bot.addUserToRole(message.author, message.guild.roles.find("name", role), function(err){
+
+            if(err){
+
+              message.reply(err);
+
+            }else{
+
+              message.reply("Role added!");
+
+            }
+          });
+        }catch(e){
+
+          message.reply("I cannot do that here, please ask me in a public channel, in the server you wish me to add the role.");
+
+        }
+
+      }else{
+
+        message.reply("That is not a role I can give you.");
+
+      }
+    }else if (input.indexOf("!unroleme ") === 0){
+
+      role = message.content.substring(9).trim();
+
+      //bot.reply("Attempting to unrole you.");
+
+      if(!(roleList.indexOf(role) > -1)){
+
+        try{
+
+          message.removeUserFromRole(message.author, message.guild.roles.get("name", role), function(err){
+
+            if(err){
+
+              message.reply(err);
+
+            }else{
+
+              message.reply("Role removed!");
+
+            }
+          });
+        }catch(e){
+
+          message.reply("I cannot do that here, please ask me in a public channel, in the server you wish me to add the role.");
+
+        }
+      }else{
+
+        message.reply("I cannot remove that role from you.");
+
+      }
+    }else if (input === "!help"){
+
+      var commands = "```!kedkilljoy\n!roll - Usage '!roll xdy+z'\n!cocktail\n!martini\n!picard - Use in case of Zug\n!zug\n!choose <choice 1>, <choice 2>, ..., <choice N>\n!zugfacts - $100% true facts about Grozug gro-Zug\n!addzugfacts <fact> - May only be used by staff, my owner, and Gro-Zug himself.\n!roleme <role name> - Gives yourself the specified non-mod role\n!unroleme <role name> removes the specified non-mod role from you\n!imgme <search criteria> - BETA FEATURE (currently disabled): Preforms a google image search and returns a random result.\n!bugfinders - People who helped improve the bot by breaking it```";
+
+      message.channel.send(commands);
+
+    }else if (input === "!bugfinders"){
+
+      var bugfinders = "```Goplayer7 and Ziether - Broke the dice roller.";
+      bugfinders += "\nAethera - Discovered an edgecase in the dice roller.";
+      bugfinders += "\nGrozug gro-Zug - Broke everything";
+      bugfinders += "```";
+
+      message.channel.send(bugfinders);
+    }
+
+
+});
+
+
+
+/*
+
+ODO:
+
+Refactor !help to make it not just a single massive line.
+
+
+
+
+
+*/
